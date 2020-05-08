@@ -5,6 +5,9 @@ import {
   GithubClient,
   TinacmsGithubProvider,
 } from 'react-tinacms-github'
+import { TinaContentfulClient } from '../tina-contentful/tina-contentful-client'
+import { useContentfulEditing } from '../tina-contentful/use-contentful-editing'
+import { TinaContentfulProvider } from '../tina-contentful/tina-contentful-provider'
 
 export default class Site extends App {
   cms: TinaCMS
@@ -24,6 +27,9 @@ export default class Site extends App {
           authCallbackRoute: '/api/create-github-access-token',
           clientId: process.env.GITHUB_CLIENT_ID,
           baseRepoFullName: process.env.REPO_FULL_NAME, // e.g: tinacms/tinacms.org,
+        }),
+        contentful: new TinaContentfulClient({
+          clientId: 'xOdTB2kIh1_HUZkENxkjkqRXHgLdfacnrtAGf2iHy4g',
         }),
       },
       /*
@@ -55,8 +61,14 @@ export default class Site extends App {
           {/*
            ** 5. Add a button for entering Preview/Edit Mode
            */}
-          <EditLink editMode={pageProps.preview} />
-          <Component {...pageProps} />
+          <TinaContentfulProvider
+            editMode={pageProps.preview}
+            enterEditMode={enterEditMode}
+            exitEditMode={exitEditMode}
+          >
+            <EditLink editMode={pageProps.preview} />
+            <Component {...pageProps} />
+          </TinaContentfulProvider>
         </TinacmsGithubProvider>
       </TinaProvider>
     )
@@ -80,10 +92,12 @@ export interface EditLinkProps {
 }
 
 export const EditLink = ({ editMode }: EditLinkProps) => {
-  const github = useGithubEditing()
+  const contentful = useContentfulEditing()
 
   return (
-    <button onClick={editMode ? github.exitEditMode : github.enterEditMode}>
+    <button
+      onClick={editMode ? contentful.exitEditMode : contentful.enterEditMode}
+    >
       {editMode ? 'Exit Edit Mode' : 'Edit This Site'}
     </button>
   )
